@@ -21,33 +21,37 @@
 #   register: ec2_output # to store the output we use register
 
 # to print the output
-- name: print the ec2_output
-  ansible.builtin.debug:
-    msg: "{{ ec2_output }}"
-  
-- name: Ec2-user and Route 53 connection
-  hosts: localhost
+# - name: print the ec2_output
+#   ansible.builtin.debug:
+#     msg: "{{ ec2_output }}"
+
+- name: create ec2 and r53
+  hosts: localserver
   connection: local
   vars:
     ami_id: ami-0220d79f3f480ecf5
-    sg_id: sg-04eb2974139741695
-    zone_id: "Z100354714Q7Y7MA4LCQB"
+    sg_id: sg-04eb2974139741695 # replace with your SG ID
+    zone_id: "Z100354714Q7Y7MA4LCQB" # replace with your ID
     domain_name: "anjana.fun"
-    instances:
-      - mongodb
+    # we can pass instances through command line using -e
+    instances: 
+     - mongodb
+    # - redis
+    # - mysql
+    # - rabbitmq
   tasks:
-    - name: create ec2 instance
-      amazon.aws.ec2_instance:
-        name: "{{ item }}"
-        instance_type: t3.micro
-        vpc_security_group_ids:
-          - "{{ sg_id }}"
-        image_id: "{{ ami_id }}"
-        tags:
-          Name: "{{ item }}"
-      loop: "{{ instances }}"
-      register: ec2_output
+  - name: create ec2 instance
+    amazon.aws.ec2_instance:
+      name: "{{ item }}"
+      instance_type: t3.micro
+      security_group: "{{ sg_id }}"
+      image_id: "{{ ami_id }}"
+      tags:
+        Name: "{{ item }}"
+    loop: "{{ instances }}"
+    register: ec2_output
 
-    - name: print the ec2_output instance IDs
-      ansible.builtin.debug:
-        msg: "{{ ec2_output.results | map(attribute='instance_ids') | list }}"
+  # - name: print the ec2_output
+  #   ansible.builtin.debug:
+  #     msg: "{{ ec2_output }}"
+  
