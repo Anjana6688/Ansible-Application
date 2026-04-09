@@ -29,3 +29,36 @@
     ansible.builtin.debug:
       msg: "{{ ec2_output }}"
   
+  # - name: print public_ip
+  #   ansible.builtin.debug: 
+  #     msg: "{{ item.instances[0].public_ip_address }}" # if we need to print single iteam in a loop
+  #   loop: "{{ ec2_output.results }}"
+
+  # - name: print private_ip
+  #   ansible.builtin.debug: 
+  #     msg: "{{ item.instances[0].private_ip_address }}"
+  #   loop: "{{ ec2_output.results }}"
+
+  - name: create route53 record
+    amazon.aws.route53:
+      state: present
+      zone: "{{ domain_name }}"  # from ansible doc anjana.fun
+      record: "{{ item.item }}.{{ domain_name }}" # mongodb.anjana.fun
+      type: A
+      ttl: 1
+      value: "{{ item.instances[0].private_ip_address }}" # reference from ec2_output.json
+      overwrite: true
+    loop: "{{ ec2_output.results }}"
+
+  # # we are creating one record with public only for frontend
+  # - name: create route53 record for frontend
+  #   amazon.aws.route53:
+  #     state: present
+  #     zone: "{{ domain_name }}"
+  #     record: "{{ domain_name }}" # daws86s.fun
+  #     type: A
+  #     ttl: 1
+  #     value: "{{ item.instances[0].public_ip_address }}"
+  #     overwrite: true  # if we created it will over write.
+  #   when: item.item == "frontend"
+  #   loop: "{{ ec2_output.results }}"
