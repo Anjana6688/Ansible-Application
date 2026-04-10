@@ -1,3 +1,4 @@
+---
 - name: Seup mongodb server
   hosts: mongodb
   become: yes
