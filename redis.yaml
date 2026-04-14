@@ -20,7 +20,7 @@
       replace: '0.0.0.0'
 
   - name: disable proctected mode
-    ansible.builtin.lineinfile:
+    ansible.builtin.lineinfile: # ansible replace line will help here
       path: /etc/redis/redis.conf
       regexp: 'protected-mode'
       line: 'protected-mode no'
